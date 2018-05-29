@@ -1,0 +1,128 @@
+html,
+body {
+    height: 100%;
+}
+
+body {
+    background: -webkit-linear-gradient(82deg, rgb(204, 43, 94), rgb(117, 58, 136));
+    background: linear-gradient(82deg, rgb(204, 43, 94), rgb(117, 58, 136));
+}
+
+.wrap {
+    min-height: 100%;
+    height: auto;
+    margin: 0 auto -60px;
+    padding: 0 0 60px;
+}
+
+.wrap > .container {
+    padding: 70px 15px 20px;
+}
+
+.footer {
+    height: 60px;
+    color: #ffffff;
+    font-weight: bold;
+    padding-top: 20px;
+}
+
+#loginContainer {
+    font-family: 'Montserrat', sans-serif;
+    background: rgba(0,0,0, 0.5);
+    min-height: 20px;
+    margin-top: 20px;
+    padding: 15px;
+    color: #FFE5FF;
+}
+
+.social-icons,
+.input-container {
+    width: 80%;
+}
+
+.social-icons i {
+    margin-right: 5px;
+}
+
+.social-icons .list-inline {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.social-icons .list-inline li {
+    margin-bottom: 10px;
+}
+
+.btn-fb {
+    color: #fff;
+    background-color: #3b5999;
+    border-color: #314A7F;
+}
+
+.btn-fb:hover {
+    color: #fff;
+    background-color: #314A7F;
+    border-color: #314A7F;
+}
+
+.btn-google {
+    color: #fff;
+    background-color: #DD4B39;
+    border-color: #C34232;
+}
+
+.btn-google:hover {
+    color: #fff;
+    background-color: #C34232;
+    border-color: #C34232;
+}
+
+.btn-github {
+    color: #fff;
+    background-color: #24292E;
+    border-color: #282D33;
+}
+
+.btn-github:hover {
+    color: #fff;
+    background-color: #282D33;
+    border-color: #282D33;
+}
+
+.btn-linkedin {
+    color: #fff;
+    background-color: #0077B5;
+    border-color: #00669B;
+}
+
+.btn-linkedin:hover {
+    color: #fff;
+    background-color: #00669B;
+    border-color: #00669B;
+}
+
+.btn-twitter {
+    color: #fff;
+    background-color: #55ACEE;
+    border-color: #4C9AD4;
+}
+
+.btn-twitter:hover {
+    color: #fff;
+    background-color: #4C9AD4;
+    border-color: #4C9AD4;
+}
+
+.input-container div[class*=' col-'] {
+    margin-bottom: 10px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.input-container div[class*=' col-md-'].register-btnCont {
+    padding-right: 15px;
+}
+.input-container div[class*=' col-md-'].login-btnCont {
+    padding-left: 15px;
+}
