@@ -20,18 +20,23 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
+            'identityClass' => 'app\models\Account',
+            //'enableAutoLogin' => true,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
+        ],
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'dateFormat' => 'Y/MM/dd',
+            'datetimeFormat' => 'Y/MM/dd HH:mm:ss',
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
-            'useFileTransport' => true,
+            // 'useFileTransport' => true,
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -47,6 +52,12 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                ''
+                => '/site/login',
+                '/'
+                => '/site/login',
+                '/<controller:site>/<action:confirm>/<auth:.+>'
+                => '/<controller>/<action>'
             ],
         ],
     ],
@@ -59,7 +70,7 @@ if (YII_ENV_DEV) {
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        //'allowedIPs' => ['*'],
     ];
 
     $config['bootstrap'][] = 'gii';

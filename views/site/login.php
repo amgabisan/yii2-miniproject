@@ -46,6 +46,18 @@
     <hr>
 
     <p class="text-center">Login with your account</p>
+     <!-- Flash Messages -->
+    <?php if (Yii::$app->session->hasFlash('success')) { ?>
+        <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>Success!</strong> <?= Yii::$app->session->getFlash('success'); ?>
+        </div>
+    <?php } else if (Yii::$app->session->hasFlash('error')) { ?>
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>Error!</strong> <?= Yii::$app->session->getFlash('error'); ?>
+        </div>
+    <?php } ?>
     <div class="input-container center-block">
         <?php $form = ActiveForm::begin([
                     'id' => 'login-form',
@@ -60,10 +72,10 @@
         <?= $form->field($model, 'password')->passwordInput(array('placeholder'=>'Password')) ?>
 
         <div class="col-sm-12 col-md-6 register-btnCont">
-            <button type="button" class="btn btn-danger btn-block">Register</button>
+            <a href="/site/register" class="btn btn-danger btn-block">Register</a>
         </div>
         <div class="col-sm-12 col-md-6 login-btnCont">
-            <button type="button" class="btn btn-primary btn-block">Login</button>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
         </div>
 
         <p class="text-center"> Forgot Password? </p>

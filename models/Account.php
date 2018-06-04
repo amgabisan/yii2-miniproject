@@ -4,6 +4,8 @@ namespace app\models;
 
 use Yii;
 
+use yii\base\Exception;
+
 /**
  * This is the model class for table "user".
  *
@@ -39,12 +41,11 @@ class Account extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             [['user_type', 'status'], 'string'],
             [['password', 'email_address', 'last_name', 'first_name', 'status'], 'required'],
             [['ins_time', 'up_time'], 'safe'],
-            [['username'], 'string', 'max' => 30],
-            [['auth_key'], 'string', 'max' => 32],
-            [['password', 'password_reset_token'], 'string', 'max' => 255],
+            [['password', 'password_reset_token', 'auth_key'], 'string', 'max' => 255],
             [['email_address'], 'string', 'max' => 100],
             [['last_name', 'first_name'], 'string', 'max' => 50],
             [['email_address'], 'unique'],
+            ['email_address', 'email']
         ];
     }
 
@@ -61,8 +62,8 @@ class Account extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'password' => 'Password',
             'password_reset_token' => 'Password Reset Token',
             'email_address' => 'Email Address',
-            'last_name' => 'Last Name',
-            'first_name' => 'First Name',
+            'last_name' => 'Surname',
+            'first_name' => 'Given Name',
             'status' => 'Status',
             'ins_time' => 'Ins Time',
             'up_time' => 'Up Time',
@@ -102,6 +103,64 @@ class Account extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     public static function findByEmailAddress($email)
     {
         return static::findOne(['email_address' => $email]);
+    }
+
+    public function generatePassword($password)
+    {
+        return Yii::$app->security->generatePasswordHash($password);
+    }
+
+    public function generateAuthKey()
+    {
+        return $this->auth_key = Yii::$app->security->generateRandomString();
+    }
+
+    public function generatePasswordResetToken()
+	{
+		return $this->password_reset_token = Yii::$app->security->generateRandomString() . '_' . time();
+	}
+
+    public static function validatePassword($password, $hash_password)
+    {
+        return Yii::$app->getSecurity()->validatePassword($password, $hash_password);
+    }
+
+    public function saveRecord($post, $id=null)
+    {
+        $connection = Yii::$app->db;
+        $transaction =  $connection->beginTransaction();
+
+        try {
+            if (!empty($id)) {
+                $model = self::findOne($id);
+            } else {
+                $model = new Account;
+                $model->ins_time = Yii::$app->formatter->asDatetime('now');
+            }
+
+            $model->user_type = 'user';
+            $model->auth_key = $this->generateAuthKey();
+            $model->password = Yii::$app->getSecurity()->generatePasswordHash($post['password']);
+            $model->password_reset_token = $this->generatePasswordResetToken();
+            $model->email_address = $post['email_address'];
+            $model->last_name = ucwords(strtolower($post['last_name']));
+            $model->first_name = ucwords(strtolower($post['first_name']));
+            $model->status = 'unconfirmed';
+            $model->up_time = Yii::$app->formatter->asDatetime('now');
+
+            if ($model->save()) {
+                $transaction->commit();
+                return $model;
+            } else {
+                var_dump($model->errors); exit;
+                $transaction->rollBack();
+                return false;
+            }
+
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            return false;
+        }
     }
 
 }
