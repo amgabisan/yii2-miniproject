@@ -24,6 +24,9 @@ use yii\base\Exception;
  */
 class Account extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
+    public $old_password;
+    public $confirm_password;
+
     /**
      * {@inheritdoc}
      */
@@ -45,7 +48,11 @@ class Account extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             [['email_address'], 'string', 'max' => 100],
             [['last_name', 'first_name'], 'string', 'max' => 50],
             [['email_address'], 'unique'],
-            ['email_address', 'email']
+            ['email_address', 'email'],
+            // Forgot Password and Change Password
+            [['password', 'old_password', 'confirm_password'], 'required', 'on' => 'passwordUpdate'],
+            ['confirm_password', 'compare', 'compareAttribute' => 'password',
+             'message' => 'Passwords don\'t match.', 'on' => 'passwordUpdate'],
         ];
     }
 

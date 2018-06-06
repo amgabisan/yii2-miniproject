@@ -15,6 +15,7 @@ class LoginAsset extends AssetBundle
         'https://use.fontawesome.com/releases/v5.0.13/css/all.css'
     ];
     public $js = [
+        'js/auth.js'
     ];
     public $depends = [
         'yii\web\YiiAsset',

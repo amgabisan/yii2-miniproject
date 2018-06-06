@@ -56,6 +56,10 @@ class SiteController extends Controller
     public function actions()
     {
         return [
+            'auth' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'onAuthSuccess'],
+            ],
             'error' => [
                 'class' => 'yii\web\ErrorAction',
             ],
@@ -167,6 +171,7 @@ class SiteController extends Controller
             Yii::$app->session->setFlash('error', 'There was an error confirming your account. Please check if you have the correct link.');
         } else {
             $model->status = 'active';
+            $model->up_time = Yii::$app->formatter->asDatetime('now');
             if ($model->save()) {
                 Yii::$app->session->setFlash('success', 'Account confirmed. You may now login');
             } else {
@@ -174,7 +179,7 @@ class SiteController extends Controller
             }
         }
 
-         return $this->render('login', [
+        return $this->render('login', [
             'model' => $loginFormModel,
         ]);
     }
@@ -182,5 +187,197 @@ class SiteController extends Controller
     public function actionDashboard()
     {
         return $this->render('dashboard');
+    }
+
+    public function actionForgotpassword()
+    {
+        $model = new Account;
+
+        if (Yii::$app->request->isPost) {
+            $post = Yii::$app->request->post('Account');
+
+            $model = Account::findOne(['email_address' => $post['email_address']]);
+            if (empty($model)) {
+                Yii::$app->session->setFlash('error', 'Account not found.');
+            } else {
+                $body = '<td style="padding-top: 10px; text-align: center">
+                            <a href="http://amg.com/site/resetpassword/'.$model->password_reset_token.'" class="btn">Reset Password</a>
+                        </td>';
+
+                $mail = Mail::sendMail($body, $model->first_name.' '.$model->last_name);
+                if (Yii::$app->mailer->compose()
+                            ->setCharset('UTF-8')
+                            ->setFrom(['admin@amg.com' => 'AMG'])
+                            ->setTo($model->email_address)
+                            ->setSubject('Reset Password')
+                            ->setHtmlBody($mail)
+                            ->send()) {
+                   Yii::$app->session->setFlash('success', 'Please check your e-mail for the reset link.');
+                } else {
+                    Yii::$app->session->setFlash('error', 'There was an error while looking for your account. Please try again later.');
+                }
+            }
+        }
+
+        return $this->render('forgotpassword', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionResetpassword($auth)
+    {
+        $model = Account::findOne(['password_reset_token' => $auth]);
+
+        if (empty($model)) {
+            Yii::$app->session->setFlash('error', 'Account not found. Please check if you have the correct link to reset your password');
+        } else {
+           $model->scenario = 'passwordUpdate';
+           $oldPassword = $model->password;
+        }
+
+        if (Yii::$app->request->isPost) {
+            $post = Yii::$app->request->post('Account');
+
+            if (!$model->validatePassword($post['old_password'], $oldPassword)) {
+                $model->addError('old_password', 'Your old password is incorrect');
+            } else {
+                $model->password_reset_token = $model->generatePasswordResetToken();
+                $model->old_password = $post['old_password'];
+                $model->password = $model->confirm_password = Yii::$app->getSecurity()->generatePasswordHash($post['password']);
+                $model->up_time = Yii::$app->formatter->asDatetime('now');
+
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', 'Your password has been updated. You may now <a href="/site/login">login</a>');
+                } else {
+                    Yii::$app->session->setFlash('error', 'There was an error while saving your password. Please try again later');
+                }
+            }
+
+
+        }
+
+        return $this->render('resetpassword', [
+            'model' => $model,
+        ]);
+    }
+
+    public function onAuthSuccess($client)
+    {
+       $attributes = $client->getUserAttributes();
+
+        $auth = Auth::find()->where([
+            'source' => $client->getId(),
+            'source_id' => $attributes['id'],
+        ])->one();
+
+        if ($client->getId() == 'google') {
+            $email = $attributes['emails'][0]['value'];
+            $logins = explode('@', $email);
+            $login = $logins[0];
+
+            $userInfoArray = [
+                'last_name' => ucwords($attributes['name']['familyName']),
+                'first_name' => ucwords($attributes['name']['givenName']),
+            ];
+        } else {
+            $email = $attributes['email'];
+            $login = $attributes['login'];
+
+            $name = explode(' ', $attributes['name']);
+            $userInfoArray = [
+                'last_name' => ucwords(array_pop($name)),
+                'first_name' => ucwords(implode(" ", $name)),
+            ];
+        }
+
+        if (Yii::$app->user->isGuest) {
+            if ($auth) { // login
+                $user_id = $auth->user_id;
+                $user = User::findOne($user_id);
+                Yii::$app->user->login($user);
+
+                $this->sessionLogin();
+                $this->redirect(['/account/default/dashboard']);
+
+            } else { // signup
+                if (User::find()->where(['email_address' => $email])->exists()) {
+                    Yii::$app->getSession()->setFlash('error',  "Account already exist.");
+                } else {
+                    $password = Yii::$app->security->generateRandomString(6);
+                    $user = new User([
+                        'username' => $login,
+                        'email_address' => $email,
+                    ]);
+
+                    $user->password = $user->generatePassword($password);
+                    $user->generateAuthKey();
+                    $user->generatePasswordResetToken();
+                    $connection = Yii::$app->db;
+                    $transaction =  $connection->beginTransaction();
+
+                    try {
+                        if ($user->save()) {
+                            $userInfo = new UserInfo;
+                            $userInfo->user_id = $user->id;
+                            $userInfo->first_name = $userInfoArray['first_name'];
+                            $userInfo->last_name = $userInfoArray['last_name'];
+                            $userInfo->status = 'active';
+
+                            if ($userInfo->save()) {
+                                $auth = new Auth([
+                                    'user_id' => $user->id,
+                                    'source' => $client->getId(),
+                                    'source_id' => (string)$attributes['id'],
+                                ]);
+                                if ($auth->save()) {
+                                    $transaction->commit();
+                                    Yii::$app->user->login($user);
+
+                                    $this->sessionLogin();
+                                    // Send Email to user for new password
+                                    $body = '<td style="padding-top: 10px; padding-bottom: 10px">
+                                                <h3>Your password is <b>'.$password.'.</b></h3>
+                                            </td>';
+
+                                    $mail = Mail::sendMail($body, $user->username);
+                                    if (Yii::$app->mailer->compose()
+                                            ->setCharset('UTF-8')
+                                            ->setFrom(['admin@gladeye-test.dev' => 'Gladeye'])
+                                            ->setTo($user->email_address)
+                                            ->setSubject('Registration')
+                                            ->setHtmlBody($mail)
+                                            ->send()) {
+                                       Yii::$app->session->setFlash('success', 'A generated password has been sent to your email.');
+                                    } else {
+                                        Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                                    }
+                                    $this->redirect(['/account/default/dashboard']);
+                                } else {
+                                    $transaction->rollBack();
+                                    print_r($auth->getErrors());
+                                }
+                            } else {
+                                $transaction->rollBack();
+                                print_r($userInfo->getErrors()); exit;
+                            }
+                        } else {
+                             $transaction->rollBack();
+                             print_r($user->getErrors()); exit;
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+            }
+        } else { // user already logged in
+            if (!$auth) { // add auth provider
+                $auth = new Auth([
+                    'user_id' => Yii::$app->user->id,
+                    'source' => $client->getId(),
+                    'source_id' => $attributes['id'],
+                ]);
+                $auth->save();
+            }
+        }
     }
 }

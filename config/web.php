@@ -23,6 +23,29 @@ $config = [
             'identityClass' => 'app\models\Account',
             //'enableAutoLogin' => true,
         ],
+         'authClientCollection' => [
+              'class' => 'yii\authclient\Collection',
+              'clients' => [
+                'facebook' => [
+                      'class' => 'yii\authclient\clients\Facebook',
+                      'clientId' => '2122751807937692',
+                      'clientSecret' => 'aa1bb25f92c6c4af6aec4346683e6311',
+                      'returnUrl'=>'http://amg.com/site/auth?authclient=facebook',
+                  ],
+                  'google' => [
+                      'class' => 'yii\authclient\clients\Google',
+                      'clientId' => '1074815305288-2ckf1tjdut4j58v1ikgjmpi9kb95lmgn.apps.googleusercontent.com',
+                      'clientSecret' => 'oFn6x7Qf_ALdEloDiv4x65EJ',
+                      'returnUrl'=>'http://amg.com/site/auth?authclient=google',
+                  ],
+                  'github' => [
+                      'class' => 'yii\authclient\clients\GitHub',
+                      'clientId' => '637c73f3a8eeff19cc2b',
+                      'clientSecret' => 'e75b08107467b426753c156734ac33e3f8876c64',
+                      'returnUrl'=>'http://amg.com/site/auth?authclient=github',
+                  ],
+                ],
+        ],
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
@@ -56,7 +79,7 @@ $config = [
                 => '/site/login',
                 '/'
                 => '/site/login',
-                '/<controller:site>/<action:confirm>/<auth:.+>'
+                '/<controller:site>/<action:(confirm|resetpassword)>/<auth:.+>'
                 => '/<controller>/<action>'
             ],
         ],

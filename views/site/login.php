@@ -42,6 +42,11 @@
         </ul>
     </div>
 
+    <?=yii\authclient\widgets\AuthChoice::widget([
+                    'baseAuthUrl' => ['session/auth'],
+                    'popupMode' => false,
+        ]) ?>
+
     <hr>
     <hr>
 
@@ -78,7 +83,7 @@
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </div>
 
-        <p class="text-center"> Forgot Password? </p>
+        <p class="text-center"><a href="/site/forgotpassword">Forgot Password?</a></p>
          <?php ActiveForm::end(); ?>
     </div>
 </div>
