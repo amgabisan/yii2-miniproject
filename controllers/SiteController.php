@@ -272,8 +272,8 @@ class SiteController extends Controller
 
         if ($client->getId() == 'google') {
             $email = $attributes['emails'][0]['value'];
-            $logins = explode('@', $email);
-            $login = $logins[0];
+//            $logins = explode('@', $email);
+//            $login = $logins[0];
 
             $userInfoArray = [
                 'last_name' => ucwords($attributes['name']['familyName']),
@@ -281,7 +281,7 @@ class SiteController extends Controller
             ];
         } else {
             $email = $attributes['email'];
-            $login = $attributes['login'];
+//            $login = $attributes['login'];
 
             $name = explode(' ', $attributes['name']);
             $userInfoArray = [
@@ -293,45 +293,48 @@ class SiteController extends Controller
         if (Yii::$app->user->isGuest) {
             if ($auth) { // login
                 $user_id = $auth->user_id;
-                $user = User::findOne($user_id);
+                $user = Account::findOne($user_id);
                 Yii::$app->user->login($user);
 
                 $this->sessionLogin();
-                $this->redirect(['/account/default/dashboard']);
+                $this->redirect(['/site/dashboard']);
 
             } else { // signup
-                if (User::find()->where(['email_address' => $email])->exists()) {
+                if (Account::find()->where(['email_address' => $email])->exists()) {
                     Yii::$app->getSession()->setFlash('error',  "Account already exist.");
                 } else {
                     $password = Yii::$app->security->generateRandomString(6);
-                    $user = new User([
-                        'username' => $login,
-                        'email_address' => $email,
-                    ]);
 
-                    $user->password = $user->generatePassword($password);
-                    $user->generateAuthKey();
-                    $user->generatePasswordResetToken();
+                    $user = [
+                        'email_address' => $email,
+                        'password' => $password,
+                        'last_name' => $userInfoArray['last_name'],
+                        'first_name' => $userInfoArray['first_name']
+                    ];
+
+//                    $user = new Account;
+//                    $user->user_type = 'user';
+//                    $user->email_address = $email;
+//                    $user->password = $user->generatePassword($password);
+//                    $user->generateAuthKey();
+//                    $user->generatePasswordResetToken();
                     $connection = Yii::$app->db;
                     $transaction =  $connection->beginTransaction();
 
                     try {
-                        if ($user->save()) {
-                            $userInfo = new UserInfo;
-                            $userInfo->user_id = $user->id;
-                            $userInfo->first_name = $userInfoArray['first_name'];
-                            $userInfo->last_name = $userInfoArray['last_name'];
-                            $userInfo->status = 'active';
+                        $userModel = new Account;
+                        if ($userModel = $userModel->saveRecord($user)) {
+                            $userModel->status = 'active';
 
-                            if ($userInfo->save()) {
+                            if ($userModel->save()) {
                                 $auth = new Auth([
-                                    'user_id' => $user->id,
+                                    'user_id' => $userModel->id,
                                     'source' => $client->getId(),
                                     'source_id' => (string)$attributes['id'],
                                 ]);
                                 if ($auth->save()) {
                                     $transaction->commit();
-                                    Yii::$app->user->login($user);
+                                    Yii::$app->user->login($userModel);
 
                                     $this->sessionLogin();
                                     // Send Email to user for new password
@@ -339,11 +342,11 @@ class SiteController extends Controller
                                                 <h3>Your password is <b>'.$password.'.</b></h3>
                                             </td>';
 
-                                    $mail = Mail::sendMail($body, $user->username);
+                                    $mail = Mail::sendMail($body, $userModel->first_name.' '.$userModel->last_name);
                                     if (Yii::$app->mailer->compose()
                                             ->setCharset('UTF-8')
                                             ->setFrom(['admin@gladeye-test.dev' => 'Gladeye'])
-                                            ->setTo($user->email_address)
+                                            ->setTo($userModel->email_address)
                                             ->setSubject('Registration')
                                             ->setHtmlBody($mail)
                                             ->send()) {
@@ -351,7 +354,7 @@ class SiteController extends Controller
                                     } else {
                                         Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
                                     }
-                                    $this->redirect(['/account/default/dashboard']);
+                                    $this->redirect(['/site/dashboard']);
                                 } else {
                                     $transaction->rollBack();
                                     print_r($auth->getErrors());
@@ -379,5 +382,16 @@ class SiteController extends Controller
                 $auth->save();
             }
         }
+    }
+
+    private function sessionLogin()
+    {
+        $user = Yii::$app->user->getIdentity()->attributes;
+        $session = Yii::$app->session;
+        $session->open();
+        foreach ($user as $userKey => $userValue) {
+            $session[$userKey] = $userValue;
+        }
+        $session->close();
     }
 }

@@ -15,11 +15,6 @@
     <div class="social-icons center-block">
         <ul class="list-inline center-block">
             <li>
-                <button type="button" class="btn btn-fb">
-                    <i class="fab fa-facebook-f"></i> Facebook
-                </button>
-            </li>
-            <li>
                 <button type="button" class="btn btn-google">
                     <i class="fab fa-google"></i> Google
                 </button>
@@ -29,21 +24,11 @@
                     <i class="fab fa-github"></i> GitHub
                 </button>
             </li>
-            <li>
-                <button type="button" class="btn btn-linkedin">
-                    <i class="fab fa-linkedin-in"></i> LinkedIn
-                </button>
-            </li>
-            <li>
-                <button type="button" class="btn btn-twitter">
-                    <i class="fab fa-twitter"></i> Twitter
-                </button>
-            </li>
         </ul>
     </div>
 
     <?=yii\authclient\widgets\AuthChoice::widget([
-                    'baseAuthUrl' => ['session/auth'],
+                    'baseAuthUrl' => ['site/auth'],
                     'popupMode' => false,
         ]) ?>
 
