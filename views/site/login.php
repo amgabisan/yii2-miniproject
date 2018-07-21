@@ -15,23 +15,24 @@
     <div class="social-icons center-block">
         <ul class="list-inline center-block">
             <li>
-                <button type="button" class="btn btn-google">
+                <button type="button" class="btn btn-google" onclick="$('.google').click()">
                     <i class="fab fa-google"></i> Google
                 </button>
             </li>
             <li>
-                <button type="button" class="btn btn-github">
+                <button type="button" class="btn btn-github" onclick="$('.github').click()">
                     <i class="fab fa-github"></i> GitHub
                 </button>
             </li>
         </ul>
     </div>
 
-    <?=yii\authclient\widgets\AuthChoice::widget([
-                    'baseAuthUrl' => ['site/auth'],
-                    'popupMode' => false,
-        ]) ?>
-
+    <div style="display:none">
+        <?=yii\authclient\widgets\AuthChoice::widget([
+                        'baseAuthUrl' => ['site/auth'],
+                        'popupMode' => false,
+            ]) ?>
+    </div>
     <hr>
     <hr>
 
