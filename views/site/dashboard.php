@@ -6,6 +6,7 @@
     $ins_time = date_create($user->ins_time);
 ?>
 
+<!--
 <div>
     <img src='/images/Logo.png' class="img-responsive center-block">
 </div>
@@ -21,3 +22,4 @@
 
     <a href="/site/logout" class="btn btn-primary center-block">Logout</a>
 </div>
+-->

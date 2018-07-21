@@ -186,6 +186,7 @@ class SiteController extends Controller
 
     public function actionDashboard()
     {
+        $this->layout = 'main';
         return $this->render('dashboard');
     }
 
