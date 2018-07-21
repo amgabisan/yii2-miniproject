@@ -69,13 +69,22 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                /* Account Management */
                 ''
                 => '/site/login',
                 '/'
                 => '/site/login',
                 '/<controller:site>/<action:(confirm|resetpassword)>/<auth:.+>'
-                => '/<controller>/<action>'
+                => '/<controller>/<action>',
+                '/dashboard'
+                => '/survey/manage/index'
+                /* Survey Management */
             ],
+        ],
+    ],
+    'modules' => [
+        'survey' => [
+            'class' => 'app\modules\survey\module',
         ],
     ],
     'params' => $params,

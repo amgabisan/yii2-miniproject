@@ -43,7 +43,7 @@ class SiteController extends Controller
                     if (Yii::$app->user->isGuest) {
                         $this->goHome();
                     } else {
-                        $this->redirect(['/site/dashboard']);
+                        $this->redirect(['/dashboard']);
                     }
                 }
             ]
@@ -101,7 +101,7 @@ class SiteController extends Controller
             }
             $session->close();
 
-            return $this->redirect(['/site/dashboard']);
+            return $this->redirect(['/dashboard']);
         }
 
         $model->password = '';
@@ -248,7 +248,7 @@ class SiteController extends Controller
                 $model->up_time = Yii::$app->formatter->asDatetime('now');
 
                 if ($model->save()) {
-                    Yii::$app->session->setFlash('success', 'Your password has been updated. You may now <a href="/site/login">login</a>');
+                    Yii::$app->session->setFlash('success', 'Your password has been updated. You may now <a href="/">login</a>');
                 } else {
                     Yii::$app->session->setFlash('error', 'There was an error while saving your password. Please try again later');
                 }
@@ -298,7 +298,7 @@ class SiteController extends Controller
                 Yii::$app->user->login($user);
 
                 $this->sessionLogin();
-                $this->redirect(['/site/dashboard']);
+                $this->redirect(['/dashboard']);
 
             } else { // signup
                 if (Account::find()->where(['email_address' => $email])->exists()) {
@@ -355,7 +355,7 @@ class SiteController extends Controller
                                     } else {
                                         Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
                                     }
-                                    $this->redirect(['/site/dashboard']);
+                                    $this->redirect(['/dashboard']);
                                 } else {
                                     $transaction->rollBack();
                                     print_r($auth->getErrors());
