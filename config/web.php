@@ -81,8 +81,12 @@ $config = [
                 /* Survey Management */
                 '/<module:survey>/<action:create>'
                 => '/<module>/manage/<action>',
-                '/<module:survey>/<action:(edit|delete)>/<id:.+>'
+                '/<module:survey>/<action:(edit|delete)>/<id:\d+>'
                 => '/<module>/manage/<action>',
+                '/<id:\d+>'
+                => '/survey/manage/answer',
+                '/<action:thanks>'
+                => '/survey/manage/<action>'
             ],
         ],
     ],

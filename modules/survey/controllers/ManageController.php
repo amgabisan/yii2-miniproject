@@ -21,12 +21,17 @@ class ManageController extends \yii\web\Controller
             'access' => [
                 'class' => AccessControl::className(),
                 // Pages that are included in the rule set
-                'only'  => ['index', 'create', 'edit'],
+                'only'  => ['index', 'create', 'edit', 'delete', 'answer', 'thanks'],
                 'rules' => [
                     [ // Pages that can be accessed when logged in
                         'allow'     => true,
-                        'actions'   => ['index', 'create', 'edit'],
+                        'actions'   => ['index', 'create', 'edit', 'delete', 'answer', 'thanks'],
                         'roles'     => ['@']
+                    ],
+                    [ // Pages that can be accessed when not logged in
+                        'allow'     => true,
+                        'actions'   => ['answer', 'thanks'],
+                        'roles'     => ['?']
                     ]
                 ],
                 'denyCallback' => function ($rule, $action) {
@@ -140,5 +145,36 @@ class ManageController extends \yii\web\Controller
         } else {
             return false;
         }
+    }
+
+    public function actionAnswer($id)
+    {
+        $model = Questionnaire::findOne($id);
+
+        if (empty($model)) {
+            return $this->redirect('/');
+        }
+
+        $question = Question::find()->where(['questionnaire_id' => $id])->all();
+
+        if (Yii::$app->request->isPost) {
+            $answers = Yii::$app->request->post('UserAnswer');
+            $userAnswerModel = new UserAnswer;
+            if ($userAnswerModel->saveAnswer($id, $answers)) {
+                return $this->redirect('/thanks');
+            } else {
+                Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+            }
+        }
+
+        return $this->render('answer', [
+            'model' => $model,
+            'question' => $question
+        ]);
+    }
+
+    public function actionThanks()
+    {
+        return $this->render('thankyou');
     }
 }

@@ -32,6 +32,11 @@ ul.navbar-nav li {
     line-height: 80px;
 }
 
+ul.navbar-nav li a {
+    height: 80px;
+    line-height: 50px;
+}
+
 /* align the logout "link" (button in form) of the navbar */
 .nav li > form > button.logout {
     padding: 15px;
