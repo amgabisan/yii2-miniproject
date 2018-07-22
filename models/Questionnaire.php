@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use \yii\db\Query;
+use yii\base\Exception;
 
 /**
  * This is the model class for table "questionnaire".
@@ -34,11 +35,11 @@ class Questionnaire extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'name', 'ins_time', 'up_time'], 'required'],
+            [['user_id', 'name'], 'required'],
             [['user_id'], 'integer'],
             [['ins_time', 'up_time'], 'safe'],
             [['name'], 'string', 'max' => 255],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Account::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
@@ -88,11 +89,66 @@ class Questionnaire extends \yii\db\ActiveRecord
               ->from('questionnaire q')
               ->leftJoin('user_answer ua', 'q.id = ua.questionnaire_id')
               ->where('q.user_id=:userId')
-              ->groupBy('ua.questionnaire_id')
+              ->groupBy('q.id')
               ->orderBy('q.up_time DESC');
 
         $command = $query->createCommand();
 
         return $command->queryAll();
+    }
+
+    public function saveSurvey($survey, $questions, $id=null)
+    {
+        $connection = Yii::$app->db;
+        $transaction =  $connection->beginTransaction();
+
+        try {
+            if (empty($id)) { // New Survey
+                $survey->ins_time = $survey->up_time = Yii::$app->formatter->asDatetime('now');
+            } else { // Update Survey
+                $survey->up_time = Yii::$app->formatter->asDatetime('now');
+
+                // Delete existing questions and add yhe new questions
+                $questionCount = Question::find()->where(['questionnaire_id' => $id])->count();
+                $deletedCount = Question::deleteAll(['questionnaire_id' => $id]);
+
+                if ($questionCount != $deletedCount) {
+                    $transaction->rollBack();
+                    return false;
+                }
+            }
+
+            if ($survey->save()) {
+                foreach ($questions as $value) {
+                    $model = new Question;
+                    $model->questionnaire_id = $survey->id;
+                    $model->question = trim($value['question']);
+                    $model->type = $value['type'];
+                    $model->required_flag = ($value['required'] == 'Yes') ? 1 : 0;
+                    $model->ins_time = $model->up_time = Yii::$app->formatter->asDatetime('now');
+
+                    if ($model->type == 'single_choice' || $model->type == 'multiple_choice') {
+                        $model->type_details = $value['choices'];
+                    } else if ($model->type == 'rating') {
+                        $model->type_details = $value['no_of_stars'];
+                    }
+
+                    if (!$model->save()) {
+                        $transaction->rollBack();
+                        return false;
+                    }
+                }
+
+                $transaction->commit();
+                return true;
+            } else {
+                $transaction->rollBack();
+                return false;
+            }
+
+        } catch (Exception $e) {
+            $transaction->rollBack();
+            return false;
+        }
     }
 }

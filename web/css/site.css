@@ -58,3 +58,31 @@ ul.navbar-nav li {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+/* Create Questionnaire */
+.surveyContainer {
+    padding: 10px 20px;
+    border: 2px solid #ededed;
+    margin-top: 10px;
+    border-radius: 10px;
+    box-shadow: 3px 5px #ededed;
+}
+.surveyContainer button.close {
+    font-size: 30px;
+    color: red;
+}
+.surveyContainer label {
+    line-height: 34px;
+}
+
+.surveyContainer label.radio-inline {
+    padding-top: 0;
+}
+.surveyContainer label.radio-inline input[type="radio"] {
+    position: relative;
+}
+.surveyContainer .has-error-field {
+    border-color: #a94442;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}

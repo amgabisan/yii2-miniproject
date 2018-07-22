@@ -77,8 +77,12 @@ $config = [
                 '/<controller:site>/<action:(confirm|resetpassword)>/<auth:.+>'
                 => '/<controller>/<action>',
                 '/dashboard'
-                => '/survey/manage/index'
+                => '/survey/manage/index',
                 /* Survey Management */
+                '/<module:survey>/<action:create>'
+                => '/<module>/manage/<action>',
+                '/<module:survey>/<action:(edit|delete)>/<id:.+>'
+                => '/<module>/manage/<action>',
             ],
         ],
     ],

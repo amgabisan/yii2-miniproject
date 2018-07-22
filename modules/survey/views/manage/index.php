@@ -10,10 +10,12 @@
 <div class="page-header text-center">
     <h3>Survey List</h3>
 </div>
+<a href="/survey/create" class="btn btn-primary pull-right">Create Survey</a>
+<br><br>
 <div class="page-content">
     <table class="table table-bordered dt-responsive nowrap" style="width:100%" id="questionnaire-list">
         <thead>
-            <th class="text-center">Questionnaire</th>
+            <th class="text-center">Survey Name</th>
             <th class="text-center">Answer Count</th>
             <th class="text-center">Answer Link</th>
             <th class="text-center">Time Updated</th>

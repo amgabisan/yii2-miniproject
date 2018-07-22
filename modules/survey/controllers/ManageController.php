@@ -6,6 +6,8 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use app\models\Questionnaire;
+use app\models\UserAnswer;
+use app\models\Question;
 
 class ManageController extends \yii\web\Controller
 {
@@ -19,11 +21,11 @@ class ManageController extends \yii\web\Controller
             'access' => [
                 'class' => AccessControl::className(),
                 // Pages that are included in the rule set
-                'only'  => ['dashboard'],
+                'only'  => ['index', 'create', 'edit'],
                 'rules' => [
                     [ // Pages that can be accessed when logged in
                         'allow'     => true,
-                        'actions'   => ['dashboard'],
+                        'actions'   => ['index', 'create', 'edit'],
                         'roles'     => ['@']
                     ]
                 ],
@@ -68,4 +70,69 @@ class ManageController extends \yii\web\Controller
         ]);
     }
 
+    public function actionCreate()
+    {
+        $model = new Questionnaire;
+
+        if (Yii::$app->request->isPost) {
+            $model->name = trim(Yii::$app->request->post('Questionnaire')['name']);
+            $model->user_id = Yii::$app->user->identity->id;
+            if ($model->validate()) {
+                $question = Yii::$app->request->post('Question');
+                if ($model->saveSurvey($model, $question)) {
+                    return $this->redirect('/dashboard');
+                } else {
+                    Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                }
+            } else {
+                if (in_array("name", $model->errors['name'])) {
+                    $model->addError('name', $model->errors['name']);
+                }
+            }
+
+        }
+
+        return $this->render('create', [
+            'model' => $model
+        ]);
+    }
+
+    public function actionEdit($id)
+    {
+        $model = Questionnaire::find()->where(['id' => $id, 'user_id' => Yii::$app->user->identity->id])->one();
+        $answerCount = UserAnswer::find()->where(['questionnaire_id' => $id])->count();
+
+        if (empty($model) || $answerCount != 0) {
+            return $this->redirect('/dashboard');
+        }
+
+        $questions = Question::find()->where(['questionnaire_id' => $id])->all();
+
+        if (Yii::$app->request->isPost) {
+            $model->name = trim(Yii::$app->request->post('Questionnaire')['name']);
+            $model->user_id = Yii::$app->user->identity->id;
+            if ($model->validate()) {
+                $question = Yii::$app->request->post('Question');
+                if ($model->saveSurvey($model, $question, $id)) {
+                    return $this->redirect('/dashboard');
+                } else {
+                    Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                }
+            } else {
+                if (in_array("name", $model->errors['name'])) {
+                    $model->addError('name', $model->errors['name']);
+                }
+            }
+        }
+
+        return $this->render('create', [
+            'model' => $model,
+            'questions' => $questions
+        ]);
+    }
+
+    public function actionDelete($id)
+    {
+
+    }
 }
