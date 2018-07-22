@@ -151,4 +151,11 @@ class Questionnaire extends \yii\db\ActiveRecord
             return false;
         }
     }
+
+    public function deleteSurvey($id)
+    {
+        $model = static::findOne($id);
+
+        return $model->delete();
+    }
 }

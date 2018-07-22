@@ -1,8 +1,10 @@
 <?php
     use yii\helpers\Html;
     use app\assets\DatatablesAsset;
+    use app\assets\AlertAsset;
 
     DatatablesAsset::register($this);
+    AlertAsset::register($this);
 
     $this->title = 'Survey List';
 ?>
@@ -36,8 +38,10 @@
                     <ul class="list-inline text-center">
                         <?php
                             $disabled = '';
+                            $deleteBtn = 'delete-btn';
                             if ($row['questionnaire_count'] != 0) {
                                 $disabled = 'disabled="disabled"';
+                                $deleteBtn .= ' cant-delete';
                             }
                         ?>
                         <li>
@@ -46,7 +50,7 @@
                             </a>
                         </li>
                         <li>
-                            <button type="button" class="btn btn-danger delete-btn" id="<?= $row['id'] ?>" <?= $disabled ?>>
+                            <button type="button" class="btn btn-danger <?= $deleteBtn ?>" id="<?= $row['id'] ?>" <?= $disabled ?>>
                                 <span class="glyphicon glyphicon-trasht" aria-hidden="true"></span> Delete
                             </button>
                         </li>

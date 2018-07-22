@@ -133,6 +133,12 @@ class ManageController extends \yii\web\Controller
 
     public function actionDelete($id)
     {
+        $model = new Questionnaire;
 
+        if ($model->deleteSurvey($id)) {
+            return '/dashboard';
+        } else {
+            return false;
+        }
     }
 }
