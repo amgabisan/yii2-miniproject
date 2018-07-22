@@ -28,3 +28,12 @@ Yii2 Mini Project is a simple survey project. It enables users to create for sur
 * Datatables
 * Sweet Alert
 * SheepIt Plugin
+
+### Installation
+* Check out the project
+* Install packages using composer
+** Go to your project directory in your work environment
+`composer install`
+* Import the database found here:
+`yii2-miniproject/database/db.sql`
+* Change the credentials in `yii2-miniproject/config/db.php`
