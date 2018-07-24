@@ -87,7 +87,7 @@ class ManageController extends \yii\web\Controller
                 if ($model->saveSurvey($model, $question)) {
                     return $this->redirect('/dashboard');
                 } else {
-                    Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                    Yii::$app->session->setFlash('error', 'There was an error while saving your survey. Please try again later.');
                 }
             } else {
                 if (in_array("name", $model->errors['name'])) {
@@ -121,7 +121,7 @@ class ManageController extends \yii\web\Controller
                 if ($model->saveSurvey($model, $question, $id)) {
                     return $this->redirect('/dashboard');
                 } else {
-                    Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                    Yii::$app->session->setFlash('error', 'There was an error while editing your survey. Please try again later.');
                 }
             } else {
                 if (in_array("name", $model->errors['name'])) {
@@ -163,7 +163,7 @@ class ManageController extends \yii\web\Controller
             if ($userAnswerModel->saveAnswer($id, $answers)) {
                 return $this->redirect('/thanks');
             } else {
-                Yii::$app->session->setFlash('error', 'There was an error while registering your account. Please try again later.');
+                Yii::$app->session->setFlash('error', 'There was an error while saving your answer. Please try again later.');
             }
         }
 
